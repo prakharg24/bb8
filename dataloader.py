@@ -50,13 +50,14 @@ def load_dataset(cat='skin_tone', valid_split=0.2, batch_size=64, img_size=64):
     img_list = ['data/train/' + df_labeled.iloc[i]['name'] for i in range(df_labeled.shape[0])]
     labels = LabelEncoder().fit_transform(df_labeled[cat])
 
+    print(np.unique(labels, return_counts=True))
     img_list, img_list_valid, labels, labels_valid = train_test_split(img_list, labels, test_size=valid_split, random_state=0)
     img_list, labels = shuffle(img_list, labels, random_state=0)
 
     train_dataset = BBDataset(img_list, labels, preprocess)
     valid_dataset = BBDataset(img_list_valid, labels_valid, preprocess)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
 
     ############################ Load Test Data ############################

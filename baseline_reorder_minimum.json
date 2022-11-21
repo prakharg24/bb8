@@ -1,0 +1,16 @@
+{
+    "submission_name": "Baseline",
+    "score": 6.0423188258997,
+    "metrics": {
+        "accuracy": {
+            "skin_tone": 0.247,
+            "gender": 0.8206666666666667,
+            "age": 0.5833333333333334
+        },
+        "disparity": {
+            "skin_tone": 0.15358316896778437,
+            "gender": 0.09971754367611674,
+            "age": 0.3196876028500013
+        }
+    }
+}
