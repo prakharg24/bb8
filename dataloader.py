@@ -15,6 +15,8 @@ from torch.utils.data import DataLoader
 from PIL import Image
 from torchvision import transforms
 
+from augmentation_lighting import AddLight
+
 class BBDataset(Dataset):
     def __init__(self, image_paths, labels, transform=None):
         self.image_paths = image_paths
@@ -32,42 +34,82 @@ class BBDataset(Dataset):
         if self.transform is not None:
             image = self.transform(image)
 
-        return image, label
+        return image.cuda(), label
 
-def load_dataset(cat='skin_tone', valid_split=0.2, batch_size=64, img_size=64):
+def load_dataset(cat='skin_tone', valid_split=0.2, batch_size=64):
     assert cat in ['skin_tone','gender','age']
 
-    preprocess = transforms.Compose([
-        transforms.Resize(img_size),
+    preprocess_train = transforms.Compose([
+        transforms.RandomResizedCrop(224),
+        # AddLight(),
+        transforms.AugMix(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    preprocess_test = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
     ############################ Load Train Data ############################
-    df = pd.read_csv('data/train/labels.csv')
+    df = pd.read_csv('data/train/labels_face.csv')
     df_labeled = df[df[cat].notna()] # take only labeled data
 
     img_list = ['data/train/' + df_labeled.iloc[i]['name'] for i in range(df_labeled.shape[0])]
-    labels = LabelEncoder().fit_transform(df_labeled[cat])
+    label_encoder = LabelEncoder()
+    labels = label_encoder.fit_transform(df_labeled[cat])
+
+    is_not_face = np.logical_not(df_labeled['is_face'])
+    labels[is_not_face] = np.max(labels) + 1
 
     print(np.unique(labels, return_counts=True))
-    img_list, img_list_valid, labels, labels_valid = train_test_split(img_list, labels, test_size=valid_split, random_state=0)
+
+    if valid_split > 0.:
+        img_list, img_list_valid, labels, labels_valid = train_test_split(img_list, labels, test_size=valid_split, random_state=0)
+        valid_dataset = BBDataset(img_list_valid, labels_valid, preprocess_test)
+        valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
+    else:
+        valid_loader = None
+
     img_list, labels = shuffle(img_list, labels, random_state=0)
-
-    train_dataset = BBDataset(img_list, labels, preprocess)
-    valid_dataset = BBDataset(img_list_valid, labels_valid, preprocess)
-
+    train_dataset = BBDataset(img_list, labels, preprocess_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
+
+    ############################ Load Test Data ############################
+    df_labeled = pd.read_csv('data/test/labels_face.csv')
+
+    img_list = ['data/test/' + df_labeled.iloc[i]['name'] for i in range(df_labeled.shape[0])]
+    labels = label_encoder.transform(df_labeled[cat])
+    is_not_face = np.logical_not(df_labeled['is_face'])
+    labels[is_not_face] = np.max(labels) + 1
+
+    test_dataset = BBDataset(img_list, labels, preprocess_test)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+    return train_loader, valid_loader, test_loader
+
+
+def load_dataset_inference(cat='skin_tone', batch_size=64, img_size=64):
+    assert cat in ['skin_tone','gender','age']
+
+    preprocess_test = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
 
     ############################ Load Test Data ############################
     df_labeled = pd.read_csv('data/test/labels.csv')
 
     img_list = ['data/test/' + df_labeled.iloc[i]['name'] for i in range(df_labeled.shape[0])]
-    labels = LabelEncoder().fit_transform(df_labeled[cat])
+    label_encoder = LabelEncoder()
+    labels = label_encoder.fit_transform(df_labeled[cat])
 
-    test_dataset = BBDataset(img_list, labels, preprocess)
-
+    test_dataset = BBDataset(img_list, labels, preprocess_test)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
-    return train_loader, valid_loader, test_loader
+    return test_loader

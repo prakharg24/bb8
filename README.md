@@ -1,3 +1,52 @@
+# Train Model From Scratch
+
+## Setting Up The Dataset
+
+### Download Dataset and Extract Zip File
+
+- Download the data zip file and extract it in the folder `data/`
+
+Directory structure
+
+```
+parent_dir
+├── data
+│   ├── train
+|   |   ├── labels.csv
+|   |   ├── TRAIN00001.png
+|   |   ├── TRAIN00002.png
+|   |   ├── ...
+│   ├── test
+|   |   ├── labels.csv
+|   |   ├── TEST0001.png
+|   |   ├── TEST0002.png
+|   |   ├── ...
+│   └── README.txt
+```
+
+### Add Face Labels to Identify Outliers
+
+- We will use the `MTCNN` model from `facenet_pytorch` library to pre-emptively differentiate between face and not face images (Find library here : https://github.com/timesler/facenet-pytorch).
+
+- Simply run the following commands to create new label files, i.e. `labels_face.csv`, for both train and test. We are also creating the labels for the public test set because we use it for our local validation.
+
+```
+python is_face_check.py data/train/
+python is_face_check.py data/test/
+```
+
+## Train Model On The Dataset
+
+### Download pretrained model on VGGFace2
+
+Unfortunately, `VGGFace2` dataset is not available anymore, removed by the original authors. However, a few pre-trained models are indeed available and can be found here : https://github.com/cydonia999/VGGFace2-pytorch
+
+We download the pretrained model `resnet50_ft` for our setup. Direct link to the model here : https://drive.google.com/file/d/1A94PAAnwk6L7hXdBXLFosB_s0SzEhAFU/view
+
+### Start training
+
+
+
 # Bias Buccaneers Image Recognition Challenge
 
 ## Introduction
@@ -14,7 +63,7 @@ To make the task a tad more fun (and challenging!), not all images in our datase
 
 The 3 models that score the highest according to our grading criteria below get prizes.
 
-1st prize: $6,000 USD 
+1st prize: $6,000 USD
 
 2nd prize: $4,000 USD
 
@@ -29,7 +78,7 @@ When you’re ready to submit, you can run the submission code that sends us you
 
 * Accuracy of the tagging model for each demographic attribute
 * Disparity in classification accuracy across different classes within each demographic attribute
-* Randomness in tags given to the ‘noisy’ ImageNet samples 
+* Randomness in tags given to the ‘noisy’ ImageNet samples
 * Efficiency of code, measured as how long it takes for the code to produce predictions
 
 ## Scoring Rubric
@@ -44,7 +93,7 @@ An input sample is harder to classify if the possible number of classes is high.
 | Multiplier | 10x | 4x | 2x
 
 ### Disparity
-For a given label (e.g. skin tone) classification model to show less disparity, but we want the range of accuracies for all possible classes of this model to be small. 
+For a given label (e.g. skin tone) classification model to show less disparity, but we want the range of accuracies for all possible classes of this model to be small.
 We measure this range using the difference of the maximum and minimum accuracies across all classes (Disp), penalizing more for a higher value of Disp. To account for the fact it is more difficult to maintain low disparity if number of possible classes is higher, we give different power multipliers for the accuracy values of three labels.
 
 | Label | Skin tone | Age | Gender |
@@ -77,14 +126,14 @@ $$ \text{Score}_2 = \text{Randomness multiplier} \times \text{Efficiency multipl
 Finally, higher values of both $\text{Score}_1$ and $\text{Score}_2$ are better.
 
 ## Submission
-Each submission should be in the form of a GitHub repository, and consist of one set of model, code, and results on the test data. If your model is unsupervised, you can choose to enter the same model in the unsupervised model challenge. If not, you can submit a separate unsupervised model---with a second set of code and results---to the unsupervised model challenge. 
+Each submission should be in the form of a GitHub repository, and consist of one set of model, code, and results on the test data. If your model is unsupervised, you can choose to enter the same model in the unsupervised model challenge. If not, you can submit a separate unsupervised model---with a second set of code and results---to the unsupervised model challenge.
 
 When the submission period starts (Nov 15), you can score a model you'd like to submit on the labeled test set of images and submit it to us by running the submission code provided in the Quickstart notebook. Multiple submissions are allowed. These scores (Score<sub>1</sub>) will go into our public leaderboard. After the submission period ends, we will test and score your final submission against a privately-held labeled holdout sample of images. Prizes will be awarded based on scores (Score<sub>2</sub>) in this private leaderboard. We'll release the private leaderboard after prizes are given out.
 
-## How do I get started? 
+## How do I get started?
 To sign up, visit us at https://biasbounty.ai/8-bbb. Once you register as a crew, you'll be given access to the train and test datasets. The notebook in this reponsitory provides a starting point for working with this data.
 
-Each entrant will have the opportunity to sign up for $5,000 USD of free AWS credit to complete the challenge. (Special thanks to our awesome partners at Amazon!) Once you enter, you will receive the password to access our challenge data. 
+Each entrant will have the opportunity to sign up for $5,000 USD of free AWS credit to complete the challenge. (Special thanks to our awesome partners at Amazon!) Once you enter, you will receive the password to access our challenge data.
 
 We will also be hosting periodic competitions throughout the month for fun items, like Kindles! If you are entering as a group, please let us know if you want to receive our Mutiny in a Box event bundle!
 

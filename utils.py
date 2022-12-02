@@ -3,12 +3,25 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 import pickle
 import torch
+import scipy.stats as stats
 
 def disparity_score(ytrue, ypred):
     cm = confusion_matrix(ytrue,ypred)
     cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    # print(cm)
     all_acc = list(cm.diagonal())
+    # print(all_acc)
     return max(all_acc) - min(all_acc)
+
+def randomness_score(ypred, num_classes):
+    yexp = [len(ypred)/num_classes for i in range(num_classes)]
+    yobs = [np.sum(ypred==i) for i in range(num_classes)]
+    chi_sq_test = stats.chisquare(f_obs=yobs, f_exp=yexp)
+
+    if chi_sq_test.pvalue > 0.05: #Stronger check to allow for errors when distribution shifts
+        return True
+    else:
+        return False
 
 def getScore(results):
     acc = results['accuracy']
@@ -28,13 +41,6 @@ def create_submission(results, submission_name, submission_filename):
         json.dump(submission, f, indent=4)
 
 def load_state_dict(model, fname):
-    """
-    Set parameters converted from Caffe models authors of VGGFace2 provide.
-    See https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/.
-    Arguments:
-        model: model
-        fname: file name of parameters converted from a Caffe model, assuming the file format is Pickle.
-    """
     with open(fname, 'rb') as f:
         weights = pickle.load(f, encoding='latin1')
 

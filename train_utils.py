@@ -2,9 +2,11 @@ import torch
 from tqdm import tqdm
 import numpy as np
 
-def train_epoch(model, train_loader, optimizer, criterion, cuda=True):
+def train_epoch(model, train_loader, optimizer, criterion, scheduler, warmup_scheduler, cuda=True, skip_scheduler=False):
     model.train()
     for i, data in tqdm(enumerate(train_loader, 0)):
+        # if i>10:
+        #     break
         inputs, labels = data
         if cuda:
             inputs, labels = inputs.cuda(), labels.cuda()
@@ -17,9 +19,14 @@ def train_epoch(model, train_loader, optimizer, criterion, cuda=True):
 
         optimizer.step()
 
+        if skip_scheduler:
+            continue
+        with warmup_scheduler.dampening():
+            scheduler.step()
+
     return model
 
-def get_predictions(model, valid_loader, cuda=True):
+def get_predictions(model, valid_loader, cuda=True, bg_class=None, inference_only=False):
     model.eval()
     pred_arr = []
     label_arr = []
@@ -37,4 +44,14 @@ def get_predictions(model, valid_loader, cuda=True):
             pred_arr.extend(predicted.cpu().detach().numpy())
             label_arr.extend(labels.cpu().detach().numpy())
 
-    return np.array(pred_arr), np.array(label_arr)
+    pred_arr, label_arr = np.array(pred_arr), np.array(label_arr)
+
+    if bg_class is None:
+        return pred_arr, label_arr
+    else:
+        pred_arr[pred_arr==bg_class] = np.random.randint(0, bg_class, size=np.sum(pred_arr==bg_class))
+        if inference_only:
+            return pred_arr, label_arr
+        bg_arr = label_arr==bg_class
+        label_arr[label_arr==bg_class] = np.random.randint(0, bg_class, size=np.sum(label_arr==bg_class))
+        return pred_arr, label_arr, bg_arr
