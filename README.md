@@ -1,4 +1,4 @@
-## 0 Required Packages
+## Required Packages
 
 ```
 numpy
@@ -9,15 +9,15 @@ torch
 torchvision
 ```
 
-## 1 Quick Start and Inference
+## Quick Start and Inference
 
-### 1.1 Download trained model checkpoints
+### Download trained model checkpoints
 
 - Create a folder `models` in the home directory.
 
 - Download all 3 checkpoints from [here](https://drive.google.com/drive/folders/1kX0WU5DdZl5ai54EB3XWO2BgDLaCdS0w?usp=share_link) and place them in the folder `models`.
 
-### 1.2 Execute Inference
+### Execute Inference
 
 Simply run inference with the following command,
 
@@ -29,15 +29,15 @@ python inference.py --batch_size 64 --savefldr models/ --cuda --label_file data/
 
 Change the path to the label file and image parent directory if the inference is required to be done on a different folder.
 
-### 1.3 Insights on Model Prediction
+### Insights on Model Prediction
 
 The models used in this repo have classification heads that classify each image into pre-defined classes for a given demographic, and an additional background class. The background class here refers to identifying the absence of face in the image. The final predictions do not contain this 'background class', and instead the predictions for such images are replaced with random predictions. Thus, the inference process is non-deterministic, and one can expect minor variance in scores obtained across multiple runs.
 
-## 2 Training the Model Locally
+## Training the Model Locally
 
-### 2.1 Setting Up The Dataset
+### Setting Up The Dataset
 
-#### 2.1.1 Download Dataset and Extract Zip File
+#### Download Dataset and Extract Zip File
 
 - Download the data zip file and extract it in the folder `data/`
 
@@ -59,7 +59,7 @@ parent_dir
 │   └── README.txt
 ```
 
-#### 2.1.2 Add Face Labels to Identify Outliers
+#### Add Face Labels to Identify Outliers
 
 - We will use the `MTCNN` model from `facenet_pytorch` library to differentiate between face and not face images (Find library here : https://github.com/timesler/facenet-pytorch).
 
@@ -70,9 +70,9 @@ python is_face_check.py data/train/
 python is_face_check.py data/test/
 ```
 
-### 2.2 Train Model On The Dataset
+### Train Model On The Dataset
 
-#### 2.2.1 Download pretrained model on VGGFace2
+#### Download pretrained model on VGGFace2
 
 Unfortunately, `VGGFace2` dataset is not available anymore, removed by the original authors. However, a few pre-trained models are indeed available and can be found [here](https://github.com/cydonia999/VGGFace2-pytorch)
 
