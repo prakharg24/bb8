@@ -21,7 +21,7 @@ def inference(args):
 
     results = {'accuracy': {}, 'disparity': {}}
     for cat in CATEGORIES:
-        test_loader = load_dataset_inference(cat=cat, batch_size=args.batch_size)
+        test_loader = load_dataset_inference(cat=cat, batch_size=args.batch_size, label_file=args.label_file, img_parent_dir=args.img_parent_dir)
 
         num_classes = NUM_CLASSES_DICT[cat]
         model = torch.load(args.savefldr + cat + '_best.pth')
@@ -32,7 +32,6 @@ def inference(args):
         pred_arr, label_arr = get_predictions(model, test_loader, cuda=args.cuda, bg_class=num_classes, inference_only=True)
         results['accuracy'][cat] = accuracy_score(label_arr, pred_arr)
         results['disparity'][cat] = disparity_score(label_arr, pred_arr)
-        print(results)
 
     print("Result Dictionary")
     print(results)
@@ -40,12 +39,12 @@ def inference(args):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", type=int, default=64, help="Batch Size")
-parser.add_argument("--gpus", default="7", help="GPU Device ID to use")
 parser.add_argument("--savefldr", default="models/", help="Folder to save checkpoints")
 parser.add_argument("--cuda", action="store_true", help="Use CUDA")
+parser.add_argument("--label_file", default="data/test/labels.csv", help="Label file path")
+parser.add_argument("--img_parent_dir", default="data/test/", help="Path to all images in the label file")
 parser.add_argument("--outfile", default="baseline_score.json", help="Output file name")
 
 args = parser.parse_args()
 
-os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
 inference(args)

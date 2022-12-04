@@ -18,7 +18,7 @@ def randomness_score(ypred, num_classes):
     yobs = [np.sum(ypred==i) for i in range(num_classes)]
     chi_sq_test = stats.chisquare(f_obs=yobs, f_exp=yexp)
 
-    if chi_sq_test.pvalue > 0.05: #Stronger check to allow for errors when distribution shifts
+    if chi_sq_test.pvalue > 0.05:
         return True
     else:
         return False

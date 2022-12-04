@@ -2,11 +2,9 @@ import torch
 from tqdm import tqdm
 import numpy as np
 
-def train_epoch(model, train_loader, optimizer, criterion, scheduler, warmup_scheduler, cuda=True, skip_scheduler=False):
+def train_epoch(model, train_loader, optimizer, criterion, scheduler, cuda=True, skip_scheduler=False):
     model.train()
     for i, data in tqdm(enumerate(train_loader, 0)):
-        # if i>10:
-        #     break
         inputs, labels = data
         if cuda:
             inputs, labels = inputs.cuda(), labels.cuda()
@@ -21,8 +19,7 @@ def train_epoch(model, train_loader, optimizer, criterion, scheduler, warmup_sch
 
         if skip_scheduler:
             continue
-        with warmup_scheduler.dampening():
-            scheduler.step()
+        scheduler.step()
 
     return model
 
